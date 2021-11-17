@@ -58,6 +58,43 @@ int g_frameIndex = 0;
 
 //draw floor
 void drawFloor() {
+	/***
+	glBegin(GL_QUADS);									// Begin Drawing A Quad
+	glNormal3f(0.0, 1.0, 0.0);						// Normal Pointing Up
+	//glTexCoord2f(0.0f, 1.0f);					// Bottom Left Of Texture
+	glVertex3f(0, -8, -10);					// Bottom Left Corner Of Floor
+
+	//glTexCoord2f(0.0f, 0.0f);					// Top Left Of Texture
+	glVertex3f(0, -8, -30);					// Top Left Corner Of Floor
+
+	//glTexCoord2f(1.0f, 0.0f);					// Top Right Of Texture
+	glVertex3f(30, -8, -10);					// Top Right Corner Of Floor
+
+	//glTexCoord2f(1.0f, 1.0f);					// Bottom Right Of Texture
+	glVertex3f(30, -8, -30);					// Bottom Right Corner Of Floor
+	glEnd();                                                   // Done Drawing The Quad
+	***/
+	// 绘制四边形
+	glBegin(GL_QUADS);
+
+	// 1. 设置白色 , glVertex3f (GLfloat x, GLfloat y, GLfloat z)
+	glColor4ub(255, 255, 255, 255);
+	glVertex3f(10.0f, -5.0f, -10.0f);
+
+	// 2. 设置绿色 
+	glColor4ub(0, 255, 0, 255);
+	glVertex3f(-10.0f, -5.0f, -10.0f);
+
+	// 3. 设置蓝色
+	glColor4ub(0, 0, 255, 255);
+	glVertex3f(-10.0f, -5.0f, -20.0f);
+
+	// 4. 设置绿色 
+	glColor4ub(0, 255, 0, 255);
+	glVertex3f(10.0f, -5.0f, -20.0f);
+
+	// 绘制四边形结束
+	glEnd();
 
 }
 
@@ -158,140 +195,8 @@ void init(void) {
 // update
 //================================
 void update(void) {
-	// catmull-rom + fixed
-	if (spline_opt == 1 && rotation_opt == 1) {
-		//if get input 1, choose catmull spline, increase t
-		if (t < point_num - 3) {
-			float curgeo[6];
-			for (int i = 0; i < 6; i++) {
-				float G[4] = { fixaray[(int)t][i], fixaray[(int)t + 1][i] ,fixaray[(int)t + 2][i] ,fixaray[(int)t + 3][i] };
-				curgeo[i] = matrixTMG(mCR, G);
-			}
-			x = curgeo[0];
-			y = curgeo[1];
-			z = curgeo[2];
-			fixedangle(curgeo[3], curgeo[4], curgeo[5]);
-			t = t + dt;
-		}
-
-	}
-	//catmull-rom + quaternion
-	else if (spline_opt == 1 && rotation_opt == 2) {
-		//if get input 1, choose catmull spline, increase t
-		if (t < point_num - 3) {
-			float curgeo[7];
-			for (int i = 0; i < 7; i++) {
-				float G[4] = { qaray[(int)t][i], qaray[(int)t + 1][i] ,qaray[(int)t + 2][i] ,qaray[(int)t + 3][i] };
-				curgeo[i] = matrixTMG(mCR, G);
-			}
-			x = curgeo[0];
-			y = curgeo[1];
-			z = curgeo[2];
-
-			//normalize quanternion
-			float wxyz_2 = curgeo[3] * curgeo[3] + curgeo[4] * curgeo[4] + curgeo[5] * curgeo[5] + curgeo[6] * curgeo[6];
-			if (wxyz_2 != 1) {
-				float wxyz = sqrt(fabs(wxyz_2));
-				for (int i = 3; i < 7; i++) {
-					curgeo[i] = curgeo[i] / wxyz;
-				}
-			}
-			//get quanternion rotation matrix
-			quaternion(curgeo[3], curgeo[4], curgeo[5], curgeo[6]);
-			t = t + dt;
-		}
-
-
-	}
-	//Bspline + fixed angel
-	else if (spline_opt == 2 && rotation_opt == 1) {
-		if (t < point_num - 3) {
-			float curgeo[6];
-			for (int i = 0; i < 6; i++) {
-				float G[4] = { fixaray[(int)t][i], fixaray[(int)t + 1][i] ,fixaray[(int)t + 2][i] ,fixaray[(int)t + 3][i] };
-				curgeo[i] = matrixTMG(mB, G);
-			}
-			x = curgeo[0];
-			y = curgeo[1];
-			z = curgeo[2];
-			fixedangle(curgeo[3], curgeo[4], curgeo[5]);
-			t = t + dt;
-		}
-	}
-	//Bspline + quaternion
-	else if (spline_opt == 2 && rotation_opt == 2) {
-		//get all geometric point using b-spline
-		if (t < point_num - 3) {
-			float curgeo[7];
-			for (int i = 0; i < 7; i++) {
-				float G[4] = { qaray[(int)t][i], qaray[(int)t + 1][i] ,qaray[(int)t + 2][i] ,qaray[(int)t + 3][i] };
-				curgeo[i] = matrixTMG(mB, G);
-			}
-			x = curgeo[0];
-			y = curgeo[1];
-			z = curgeo[2];
-
-			//normalize quanternion
-			float wxyz_2 = curgeo[3] * curgeo[3] + curgeo[4] * curgeo[4] + curgeo[5] * curgeo[5] + curgeo[6] * curgeo[6];
-			if (wxyz_2 != 1) {
-				float wxyz = sqrt(fabs(wxyz_2));
-				for (int i = 3; i < 7; i++) {
-					curgeo[i] = curgeo[i] / wxyz;
-				}
-			}
-			//get quanternion rotation matrix
-			quaternion(curgeo[3], curgeo[4], curgeo[5], curgeo[6]);
-			t = t + dt;
-		}
-	}
-
 }
 
-//===============================
-// teapot display
-// ==============================
-void displayTorse() {
-	//if (rotation_opt == 1) {
-	//	glRotated(ax, 1.0, 0.0, 0.0);
-	//	glRotated(ay, 0.0, 1.0, 0.0);
-	//	glRotated(az, 0.0, 0.0, 1.0);
-	//}
-	//std::cout << M[0];
-	glLoadMatrixf(M);
-	// render objects
-	glScalef(1.5, 2.0, 1);
-	glutSolidCube(1);
-}
-
-void displayLeftLeg() {
-	float* ML; // left leg
-	float TL[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1.3, 0.3, 1 };
-	float theta = (sin(speed * t * PI + PI / 2) * PI) / 8;
-	float RL[16] = { cos(theta),-sin(theta),0,0,sin(theta),cos(theta),0,0,0,0,1,0,0,0,0,1 };
-	float TL2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.0, 0, 0, 1 };
-	ML = matrixtransform(M, TL);
-	ML = matrixtransform(ML, RL);
-	ML = matrixtransform(ML, TL2);
-
-	glLoadMatrixf(ML);
-	glScalef(0.3, 2.5, 0.3);
-	glutSolidCube(1.0);
-
-}
-
-void displayRightLeg() {
-	float TR[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.5, -1.3, -0.3, 1 };
-	float theta = (sin(speed * t * PI + PI / 2) * PI) / 8;
-	float RR[16] = { cos(-theta),-sin(-theta),0,0,sin(-theta),cos(-theta),0,0,0,0,1,0,0,0,0,1 };
-	float TR2[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.5 , 0, 0, 1 };
-	MR = matrixtransform(M, TR);
-	MR = matrixtransform(MR, RR);
-	MR = matrixtransform(MR, TR2);
-
-	glLoadMatrixf(MR);
-	glScalef(0.3, 2.5, 0.3);
-	glutSolidCube(1.0);
-}
 //================================
 // render
 //================================
@@ -336,11 +241,10 @@ void render(void) {
 	// modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0, 0.0, -20);
-	displayTorse();
-	displayLeftLeg();
-	displayRightLeg();
-
+	glTranslatef(0.0, 0.0, 1.0);
+	glRotated(0, 0.0, 1.0, 0.0);
+	//glutSolidTeapot(1.1);
+	drawFloor();
 	// disable lighting
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
@@ -372,7 +276,7 @@ void reshape(int w, int h) {
 	// projection matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, (GLfloat)w / (GLfloat)h, 1.0, 500);
+	gluPerspective(80.0, (GLfloat)w / (GLfloat)h, 1.0, 500);
 }
 
 
