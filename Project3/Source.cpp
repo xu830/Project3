@@ -58,42 +58,15 @@ int g_frameIndex = 0;
 
 //draw floor
 void drawFloor() {
-	/***
-	glBegin(GL_QUADS);									// Begin Drawing A Quad
-	glNormal3f(0.0, 1.0, 0.0);						// Normal Pointing Up
-	//glTexCoord2f(0.0f, 1.0f);					// Bottom Left Of Texture
-	glVertex3f(0, -8, -10);					// Bottom Left Corner Of Floor
-
-	//glTexCoord2f(0.0f, 0.0f);					// Top Left Of Texture
-	glVertex3f(0, -8, -30);					// Top Left Corner Of Floor
-
-	//glTexCoord2f(1.0f, 0.0f);					// Top Right Of Texture
-	glVertex3f(30, -8, -10);					// Top Right Corner Of Floor
-
-	//glTexCoord2f(1.0f, 1.0f);					// Bottom Right Of Texture
-	glVertex3f(30, -8, -30);					// Bottom Right Corner Of Floor
-	glEnd();                                                   // Done Drawing The Quad
-	***/
-	// 绘制四边形
 	glBegin(GL_QUADS);
-
-	// 1. 设置白色 , glVertex3f (GLfloat x, GLfloat y, GLfloat z)
-	glColor4ub(255, 255, 255, 255);
 	glVertex3f(10.0f, -5.0f, -10.0f);
 
-	// 2. 设置绿色 
-	glColor4ub(0, 255, 0, 255);
 	glVertex3f(-10.0f, -5.0f, -10.0f);
 
-	// 3. 设置蓝色
-	glColor4ub(0, 0, 255, 255);
 	glVertex3f(-10.0f, -5.0f, -20.0f);
 
-	// 4. 设置绿色 
-	glColor4ub(0, 255, 0, 255);
 	glVertex3f(10.0f, -5.0f, -20.0f);
 
-	// 绘制四边形结束
 	glEnd();
 
 }
