@@ -23,6 +23,13 @@ rotation_opt; // 1 for fixed angle, 2 for quaternion
 float point_num = 6;
 //speed for leg movement
 float speed = 3;
+//ball location
+float ballloc[1][3] = { {-15, -5, -10} };
+//ball velocity
+float ballv[1][3] = { {1, 0, 0} };
+//gravity
+float g[3] = { 0, 1, 0 };
+
 //geometric point for quaternion
 float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0, 1, 0}, {5.5, -2.0, -13.0, 1, 0, 0, 1},{2.0, 3.0, -15.0, 1, 1, 0, 0},
 	{-3.5, 6.5, -20.0, 1, 0, 1, 0}, {10.0, 6.0, -15.0, 0, 0, 1, 0} };
@@ -68,6 +75,9 @@ void drawFloor() {
 	glVertex3f(10.0f, -5.0f, -20.0f);
 
 	glEnd();
+
+}
+void drawBalls() {
 
 }
 
@@ -214,10 +224,12 @@ void render(void) {
 	// modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0, 0.0, 1.0);
-	glRotated(0, 0.0, 1.0, 0.0);
+	//glTranslatef(0.0, 0.0, 1.0);
+	//glRotated(0, 0.0, 1.0, 0.0);
 	//glutSolidTeapot(1.1);
 	drawFloor();
+	//draw ball
+	drawBalls();
 	// disable lighting
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
