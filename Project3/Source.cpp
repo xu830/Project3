@@ -35,7 +35,7 @@ float ballold[1][3] = { 0 };
 //ball velocity
 float ballv[1][3] = { {1, 0, 0} };
 //gravity
-float g[3] = { 0, 1, 0 };
+float g[3] = { 0, -3, 0 };
 
 //geometric point for quaternion
 float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0, 1, 0}, {5.5, -2.0, -13.0, 1, 0, 0, 1},{2.0, 3.0, -15.0, 1, 1, 0, 0},
@@ -86,9 +86,12 @@ void drawFloor() {
 }
 void drawBalls(int bn) {
 	//glPushMatrix();
-	x = ballold[bn][0];
-	y = ballold[bn][1];
-	z = ballold[bn][2];
+	x = ballold[bn][0] + g[0] * 0.01;
+	y = ballold[bn][1] + g[1] * 0.01;
+	z = ballold[bn][2] + g[2] * 0.01;
+	ballold[bn][0] = x;
+	ballold[bn][1] = y;
+	ballold[bn][2] = z;
 	M[15] = 1.0f;
 	M[12] = x;
 	M[13] = y;
