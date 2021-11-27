@@ -23,8 +23,15 @@ rotation_opt; // 1 for fixed angle, 2 for quaternion
 float point_num = 6;
 //speed for leg movement
 float speed = 3;
+
+//=====================
+// ball
+// ====================
+//total ball number
+int ballnum = 1;
 //ball location
-float ballloc[1][3] = { {-15, -5, -10} };
+float ballloc[1][3] = { {-10, 10, -15} };
+float ballold[1][3] = { 0 };
 //ball velocity
 float ballv[1][3] = { {1, 0, 0} };
 //gravity
@@ -77,7 +84,19 @@ void drawFloor() {
 	glEnd();
 
 }
-void drawBalls() {
+void drawBalls(int bn) {
+	//glPushMatrix();
+	x = ballold[bn][0];
+	y = ballold[bn][1];
+	z = ballold[bn][2];
+	M[15] = 1.0f;
+	M[12] = x;
+	M[13] = y;
+	M[14] = z;
+	//glMultMatrixf(M);
+	glTranslatef(x, y, z);
+	glutSolidSphere(0.6, 20, 20);
+	glPopMatrix();
 
 }
 
@@ -229,7 +248,9 @@ void render(void) {
 	//glutSolidTeapot(1.1);
 	drawFloor();
 	//draw ball
-	drawBalls();
+	for (int i = 0; i < ballnum; i++) {
+		drawBalls(i);
+	}
 	// disable lighting
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHTING);
@@ -296,6 +317,13 @@ int main(int argc, char** argv) {
 	***/
 	spline_opt = 1;
 	rotation_opt = 1;
+
+	//inital ball variables
+	for (int i = 0; i < ballnum; i++) {
+		ballold[i][0] = ballloc[i][0];
+		ballold[i][1] = ballloc[i][1];
+		ballold[i][2] = ballloc[i][2];
+	}
 
 	//get critical points for left legs--using fixed angle
 	// create opengL window
