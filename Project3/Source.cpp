@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <math.h>
 #include <iostream>
-#define PI 3.14159265
 // glut
 #include <GL/glut.h>
 
@@ -12,17 +11,10 @@
 
 //================================
 //INSTRUCTION:
-//
+//please change the following section of ball to test the code.
+//you could decide how many ball do you want to use, their original locations, origina velocity, force on axis and mass.
+// if you would like to change the ball's number(ballnum), remember to change first digit of ballloc, ballold, ballv, and ballm.
 //================
-
-
-//option
-int spline_opt, //1 for catmull-rom, 2 for b spline
-rotation_opt; // 1 for fixed angle, 2 for quaternion
-
-float point_num = 6;
-//speed for leg movement
-float speed = 3;
 
 //=====================
 // ball
@@ -32,8 +24,12 @@ int ballnum = 1;
 //ball location
 float ballloc[1][3] = { {-10, 10, -15} };
 float ballold[1][3] = { 0 };
-//ball velocity
-float ballv[1][3] = { {1, 0, 0} };
+//force on ball
+float ballf[1][3] = { {10, 0, 0} };
+//ball's velocity
+float ballv[1][3] = { 0 };
+//ball mass
+float ballm[1] = {10};
 //ball radius
 float ballr = 1;
 //gravity
@@ -41,31 +37,8 @@ float g = -9.8;
 //boolean if on floor
 bool onfloor = false;
 
-//geometric point for quaternion
-float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0, 1, 0}, {5.5, -2.0, -13.0, 1, 0, 0, 1},{2.0, 3.0, -15.0, 1, 1, 0, 0},
-	{-3.5, 6.5, -20.0, 1, 0, 1, 0}, {10.0, 6.0, -15.0, 0, 0, 1, 0} };
-
-//geometric point for fixed angle
-float fixaray[6][6] = { {-8.0, -6.0, -25.0, 0, 0, 0}, {-2.0, -5.0, -17.0, 0, 0, 30}, {5.5, -2.0, -13.0, 0, 90, 0},{2.0, 3.0, -15.0, 0, 0, 0},
-	{-3.5, 6.5, -20.0, 0, 30, 0}, {3.0, 8.0, -15.0, 0, 0, 0} };
-
-float dt = 0.01; //dt is the spcing to used in the animation
-
-//geometrix matrix for torso and legs
-float M[16] = { 0 };//torso
-
-float* MR; //right leg
-
-//t is the value in both catmull-rom and b spline function.
-float t = 0.0;
-float x, y, z; //current location for the object
-
-//Matrix for Calculating Catmull Rom, using 1/2 as 'a'
-float mCR[4][4] = { {-0.5, 1.5, -1.5, 0.5}, {1.0, -2.5, 2.0, -0.5},
-	{-0.5, 0.0, 0.5, 0.0}, {0.0, 1.0, 0.0, 0.0} };
-//Matrix for Calculating B-spline
-float mB[4][4] = { {-1.0, 3.0, -3.0, 1.0}, {3.0, -6.0, 3.0, 0.0},
-	{-3.0, 0.0, 3.0, 0.0}, {1.0, 4.0, 1.0, 0.0} };
+//geometrix matrix for ball
+float M[16] = { 0 };
 
 // screen size
 int g_screenWidth = 0;
@@ -91,11 +64,20 @@ void drawFloor() {
 void drawBalls(int bn) {
 
 	//update location;
-	ballv[bn][1] = ballv[bn][1] + g * 0.01;
-	//std::cout << x;
-	x = ballloc[bn][0] + ballv[bn][0] * 0.01;
-	y = ballloc[bn][1] + ballv[bn][1] * 0.01 ;
-	z = ballloc[bn][2] + ballv[bn][2] * 0.01;
+	//calculate acceleration a = F/m;
+	float ax = ballf[bn][0] / ballm[bn];
+	float ay = ballf[bn][1] / ballm[bn];
+	float az = ballf[bn][2] / ballm[bn];
+	//calculate velocity
+	ballv[bn][0] = ballv[bn][0] + ax * 0.01;
+	ballv[bn][1] = ballv[bn][1] + (ay + g) * 0.01;
+	ballv[bn][2] = ballv[bn][2] + az * 0.01;
+	//add gravity
+	//ballf[bn][1] = ballf[bn][1] + g * 0.01;
+	//std::cout << ballf[bn][1];
+	float x = ballloc[bn][0] + ballv[bn][0] * 0.01;
+	float y = ballloc[bn][1] + ballv[bn][1] * 0.01 ;
+	float z = ballloc[bn][2] + ballv[bn][2] * 0.01;
 	ballloc[bn][0] = x;
 	ballloc[bn][1] = y;
 	ballloc[bn][2] = z;
@@ -127,94 +109,7 @@ void checkFloor(int bn) {
 		std::cout << ballloc[bn][0];
 		//onfloor = true;
 	}
-	//else if (ballloc[bn][1] + ballr + 5 > 0.5) {
-		//ballv[bn][1] 
-		//onfloor = false;
-	//}
-}
 
-//Matrix multiplication for Q(t) = TMG
-float matrixTMG(float M[4][4], float G[4]) {
-	float TMG;//return value
-	float MG[4];//valur of M * G
-	float mt = t - int(t);
-	MG[0] = mCR[0][0] * G[0] + mCR[0][1] * G[1] + mCR[0][2] * G[2] + mCR[0][3] * G[3];
-	MG[1] = mCR[1][0] * G[0] + mCR[1][1] * G[1] + mCR[1][2] * G[2] + mCR[1][3] * G[3];
-	MG[2] = mCR[2][0] * G[0] + mCR[2][1] * G[1] + mCR[2][2] * G[2] + mCR[2][3] * G[3];
-	MG[3] = mCR[3][0] * G[0] + mCR[3][1] * G[1] + mCR[3][2] * G[2] + mCR[3][3] * G[3];
-	TMG = MG[0] * mt * mt * mt + MG[1] * mt * mt + MG[2] * mt + MG[3];
-	return TMG;
-}
-
-//matrix multiplacation for transformation(4*4 matrix * 4*4 matrix)
-float* matrixtransform(float M1[16], float M2[16]) {
-	static float M12[16];
-	M12[0] = M1[0] * M2[0] + M1[4] * M2[1] + M1[8] * M2[2] + M1[12] * M2[3];
-	M12[1] = M1[1] * M2[0] + M1[5] * M2[1] + M1[9] * M2[2] + M1[13] * M2[3];
-	M12[2] = M1[2] * M2[0] + M1[6] * M2[1] + M1[10] * M2[2] + M1[14] * M2[3];
-	M12[3] = M1[3] * M2[0] + M1[7] * M2[1] + M1[11] * M2[2] + M1[15] * M2[3];
-	M12[4] = M1[0] * M2[4] + M1[4] * M2[5] + M1[8] * M2[6] + M1[12] * M2[7];
-	M12[5] = M1[1] * M2[4] + M1[5] * M2[5] + M1[9] * M2[6] + M1[13] * M2[7];
-	M12[6] = M1[2] * M2[4] + M1[6] * M2[5] + M1[10] * M2[6] + M1[14] * M2[7];
-	M12[7] = M1[3] * M2[4] + M1[7] * M2[5] + M1[11] * M2[6] + M1[15] * M2[7];
-	M12[8] = M1[0] * M2[8] + M1[4] * M2[9] + M1[8] * M2[10] + M1[12] * M2[11];
-	M12[9] = M1[1] * M2[8] + M1[5] * M2[9] + M1[9] * M2[10] + M1[13] * M2[11];
-	M12[10] = M1[2] * M2[8] + M1[6] * M2[9] + M1[10] * M2[10] + M1[14] * M2[11];
-	M12[11] = M1[3] * M2[8] + M1[7] * M2[9] + M1[11] * M2[10] + M1[15] * M2[11];
-	M12[12] = M1[0] * M2[12] + M1[4] * M2[13] + M1[8] * M2[14] + M1[12] * M2[15];
-	M12[13] = M1[1] * M2[12] + M1[5] * M2[13] + M1[9] * M2[14] + M1[13] * M2[15];
-	M12[14] = M1[2] * M2[12] + M1[6] * M2[13] + M1[10] * M2[14] + M1[14] * M2[15];
-	M12[15] = M1[3] * M2[12] + M1[7] * M2[13] + M1[11] * M2[14] + M1[15] * M2[15];
-	return M12;
-}
-
-//================================
-// Quaternion rotation 
-// ===============================
-void quaternion(float w, float qx, float qy, float qz) {
-	M[0] = 1.0f - 2.0f * (qy * qy + qz * qz);
-	M[1] = 2.0f * (qx * qy + w * qz);
-	M[2] = 2.0f * (qx * qz - w * qy);
-	M[3] = 0.0f;
-	M[4] = 2.0f * (qx * qy - w * qz);
-	M[5] = 1.0f - 2.0f * (qx * qx + qz * qz);
-	M[6] = 2.0f * (qy * qz + w * qx);
-	M[7] = 0.0f;
-	M[8] = 2.0f * (qx * qz + w * qy);
-	M[9] = 2.0f * (qy * qz - w * qx);
-	M[10] = 1 - 2.0f * (qx * qx + qy * qy);
-	M[11] = 0.0f;
-	M[12] = x;
-	M[13] = y;
-	M[14] = z;
-	M[15] = 1.0f;
-}
-
-//================================
-//fixed angle rotation
-//================================
-void fixedangle(float fx, float fy, float fz) {
-	//use pi to represent degree
-	double dx = fx * PI / 180.0;
-	double dy = fy * PI / 180.0;
-	double dz = fz * PI / 180.0;
-	//assume rotate about x first, then y, then z
-	M[0] = cos(dz) * cos(dy);
-	M[1] = sin(dz) * cos(dy);
-	M[2] = -sin(dy);
-	M[3] = 0.0f;
-	M[4] = cos(dz) * sin(dy) * sin(dx) - sin(dz) * cos(dx);
-	M[5] = sin(dz) * sin(dy) * sin(dx) + cos(dz) * cos(dx);
-	M[6] = cos(dy) * sin(dx);
-	M[7] = 0.0f;
-	M[8] = cos(dz) * sin(dy) * cos(dx) + sin(dz) * sin(dx);
-	M[9] = sin(dz) * sin(dy) * cos(dx) - cos(dz) * sin(dx);
-	M[10] = cos(dy) * cos(dx);
-	M[11] = 0.0f;
-	M[12] = x;
-	M[13] = y;
-	M[14] = z;
-	M[15] = 1.0f;
 }
 
 
@@ -324,8 +219,6 @@ void reshape(int w, int h) {
 // timer : triggered every 16ms ( about 60 frames per second )
 //================================
 void timer(int value) {
-	// increase frame index
-	g_frameIndex++;
 
 	update();
 
@@ -341,16 +234,6 @@ void timer(int value) {
 // main
 //================================
 int main(int argc, char** argv) {
-	/***
-	std::cout << "press 1 for catmull-rom spline \n";
-	std::cout << "press 2 for B-spline\n";
-	std::cin >> spline_opt;
-	std::cout << "press 1 for fixed angle\n";
-	std::cout << "press 2 for quaternion\n";
-	std::cin >> rotation_opt;
-	***/
-	spline_opt = 1;
-	rotation_opt = 1;
 
 	//inital ball variables
 	/***
