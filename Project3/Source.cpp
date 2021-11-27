@@ -34,8 +34,12 @@ float ballloc[1][3] = { {-10, 10, -15} };
 float ballold[1][3] = { 0 };
 //ball velocity
 float ballv[1][3] = { {1, 0, 0} };
+//ball radius
+float ballr = 1;
 //gravity
-float g[3] = { 0, -3, 0 };
+float g = -9.8;
+//boolean if on floor
+bool onfloor = false;
 
 //geometric point for quaternion
 float qaray[6][7] = { {-8.0, -6.0, -25.0, 0, 1, 0, 0}, {-2.0, -5.0, -17.0, 1, 0, 1, 0}, {5.5, -2.0, -13.0, 1, 0, 0, 1},{2.0, 3.0, -15.0, 1, 1, 0, 0},
@@ -85,22 +89,48 @@ void drawFloor() {
 
 }
 void drawBalls(int bn) {
-	//glPushMatrix();
-	x = ballold[bn][0] + g[0] * 0.01;
-	y = ballold[bn][1] + g[1] * 0.01;
-	z = ballold[bn][2] + g[2] * 0.01;
-	ballold[bn][0] = x;
-	ballold[bn][1] = y;
-	ballold[bn][2] = z;
+
+	//update location;
+	ballv[bn][1] = ballv[bn][1] + g * 0.01;
+	//std::cout << x;
+	x = ballloc[bn][0] + ballv[bn][0] * 0.01;
+	y = ballloc[bn][1] + ballv[bn][1] * 0.01 ;
+	z = ballloc[bn][2] + ballv[bn][2] * 0.01;
+	ballloc[bn][0] = x;
+	ballloc[bn][1] = y;
+	ballloc[bn][2] = z;
+
+	glPushMatrix();
+	M[0] = 1.0f;
+	M[5] = 1.0f;
+	M[10] = 1.0f;
 	M[15] = 1.0f;
 	M[12] = x;
 	M[13] = y;
 	M[14] = z;
-	//glMultMatrixf(M);
-	glTranslatef(x, y, z);
-	glutSolidSphere(0.6, 20, 20);
+	glMultMatrixf(M);
+	//glTranslatef(x, y, z);
+	glutSolidSphere(ballr, 20, 20);
 	glPopMatrix();
 
+}
+
+//check floor collision
+//bn is current ball's index
+void checkFloor(int bn) {
+	//if ball collade with floor
+	//std::cout << ballloc[bn][2];
+	if ((ballloc[bn][1] + 5 <= 0.8) // - (-5) = +5, -5 is the floor's y
+		&& ( -10 <= ballloc[bn][0]) &&( ballloc[bn][0] <= 10)  //check if the ball will locate on floor
+		&& (-20 <= ballloc[bn][2]) && (ballloc[bn][2] <= -10)) {
+		ballv[bn][1] = ballv[bn][1] * -0.9 ; //energy loss coused by collision 
+		std::cout << ballloc[bn][0];
+		//onfloor = true;
+	}
+	//else if (ballloc[bn][1] + ballr + 5 > 0.5) {
+		//ballv[bn][1] 
+		//onfloor = false;
+	//}
 }
 
 //Matrix multiplication for Q(t) = TMG
@@ -252,6 +282,7 @@ void render(void) {
 	drawFloor();
 	//draw ball
 	for (int i = 0; i < ballnum; i++) {
+		checkFloor(i);
 		drawBalls(i);
 	}
 	// disable lighting
@@ -285,7 +316,7 @@ void reshape(int w, int h) {
 	// projection matrix
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(80.0, (GLfloat)w / (GLfloat)h, 1.0, 500);
+	gluPerspective(70.0, (GLfloat)w / (GLfloat)h, 1.0, 500);
 }
 
 
@@ -322,11 +353,13 @@ int main(int argc, char** argv) {
 	rotation_opt = 1;
 
 	//inital ball variables
+	/***
 	for (int i = 0; i < ballnum; i++) {
 		ballold[i][0] = ballloc[i][0];
 		ballold[i][1] = ballloc[i][1];
 		ballold[i][2] = ballloc[i][2];
 	}
+	***/
 
 	//get critical points for left legs--using fixed angle
 	// create opengL window
