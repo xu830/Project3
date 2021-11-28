@@ -20,16 +20,18 @@
 // ball
 // ====================
 //total ball number
-int ballnum = 2;
+int ballnum = 7;
 //ball location
-float ballloc[2][3] = { {-10, 10, -15}, {10, 10, -15} };
-float ballold[2][3] = { 0 };
+float ballloc[7][3] = { {-10, 10, -15 }, {10, 10, -15},{-6, 7, -14}, {9, 7, -13},
+	{ -9, 8, -17} , {7, 9, -12}, { -8, 5, -10} };
+float ballold[7][3] = { 0 };
 //force on ball
-float ballf[2][3] = { {10, 0, 0}, {-10, 0, 0} };
+float ballf[7][3] = { {10, 0, 0}, {-10, 0, 0}, {6, 0, -7}, {3, 0, -9},
+	{-8, 0, 2}, {-13, 0, -2}, {9, 0, 3} };
 //ball's velocity
-float ballv[2][3] = { 0 };
+float ballv[7][3] = { 0 };
 //ball mass
-float ballm[2] = {10, 10};
+float ballm[7] = {10, 10, 13, 3, 6};
 //ball radius
 float ballr = 1;
 //gravity
@@ -116,42 +118,33 @@ void checkBall(int bn) {
 	for (int i = 0; i < ballnum; i++) {
 		if (i != bn) {
 			//check distance
-			if (sqrtf((ballloc[i][0] - ballloc[bn][0]) * (ballloc[i][0] - ballloc[bn][0])
+			if (sqrt((ballloc[i][0] - ballloc[bn][0]) * (ballloc[i][0] - ballloc[bn][0])
 				+ (ballloc[i][1] - ballloc[bn][1]) * (ballloc[i][1] - ballloc[bn][1])
-				+ (ballloc[i][2] - ballloc[bn][2]) * (ballloc[i][2] - ballloc[bn][2])) <= 2 * ballr) {
-				
-				std::cout << ballv[i][0];
-				std::cout << "collide";
-				std::cout << ballv[bn][0];
-				//use elastic collision to calculate velocity of two balls
+				+ (ballloc[i][2] - ballloc[bn][2]) * (ballloc[i][2] - ballloc[bn][2])) < (2 * ballr)) {
+
 				//velocity on x
 				float vix = ballv[i][0];
 				ballv[i][0] = ((ballm[i] - ballm[bn]) * ballv[i][0] + 2 * ballm[bn] * ballv[bn][0]) / (ballm[i] + ballm[bn]);
 				ballv[bn][0] = ((ballm[bn] - ballm[i]) * ballv[bn][0] + 2 * ballm[i] * vix) / (ballm[i] + ballm[bn]);
+				//assume after collision, the force will be zero.
+				ballf[i][0] = 0;
+				ballf[bn][0] = 0;
 
+				
 				//velocity on y
 				float viy = ballv[i][1];
 				ballv[i][1] = ((ballm[i] - ballm[bn]) * ballv[i][1] + 2 * ballm[bn] * ballv[bn][1]) / (ballm[i] + ballm[bn]);
 				ballv[bn][1] = ((ballm[bn] - ballm[i]) * ballv[bn][1] + 2 * ballm[i] * viy) / (ballm[i] + ballm[bn]);
-
+				ballf[i][1] = 0;
+				ballf[bn][1] = 0;
+				
 				// velocity on z
 				float viz = ballv[i][2];
 				ballv[i][2] = ((ballm[i] - ballm[bn]) * ballv[i][2] + 2 * ballm[bn] * ballv[bn][2]) / (ballm[i] + ballm[bn]);
 				ballv[bn][2] = ((ballm[bn] - ballm[i]) * ballv[bn][2] + 2 * ballm[i] * viz) / (ballm[i] + ballm[bn]);
+				ballf[i][2] = 0;
+				ballf[bn][2] = 0;
 
-				//change force after collision
-				float tempx = ballf[i][0];
-				ballf[i][0] += ballf[bn][0];
-				ballf[bn][0] += ballf[i][0];
-				
-				float tempy = ballf[i][1];
-				ballf[i][1] += ballf[bn][1];
-				ballf[bn][1] += ballf[i][1];
-				
-				float tempz = ballf[i][2];
-				ballf[i][2] += ballf[bn][2];
-				ballf[bn][2] += ballf[i][2];
-				
 				
 			}
 		}
@@ -218,14 +211,12 @@ void render(void) {
 	// modelview matrix
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	//glTranslatef(0.0, 0.0, 1.0);
-	//glRotated(0, 0.0, 1.0, 0.0);
-	//glutSolidTeapot(1.1);
+
 	drawFloor();
 	//draw ball
 	for (int i = 0; i < ballnum; i++) {
-		checkFloor(i);
 		checkBall(i);
+		checkFloor(i);
 		drawBalls(i);
 	}
 	// disable lighting
