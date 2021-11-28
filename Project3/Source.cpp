@@ -20,16 +20,16 @@
 // ball
 // ====================
 //total ball number
-int ballnum = 1;
+int ballnum = 5;
 //ball location
-float ballloc[1][3] = { {-10, 10, -15} };
-float ballold[1][3] = { 0 };
+float ballloc[5][3] = { {-10, 10, -15}, {10, 8, -15}, {-8, 6, -10}, {-9, 7, -15}, {10, 10, -15} };
+float ballold[5][3] = { 0 };
 //force on ball
-float ballf[1][3] = { {10, 0, 0} };
+float ballf[5][3] = { {10, 0, 0}, {-10, 0, 0}, {5, 0, 3}, {8, 0, 5}, {-10, 0, 0} };
 //ball's velocity
-float ballv[1][3] = { 0 };
+float ballv[5][3] = { 0 };
 //ball mass
-float ballm[1] = {10};
+float ballm[5] = {10, 8, 5, 5, 10};
 //ball radius
 float ballr = 1;
 //gravity
@@ -99,15 +99,58 @@ void drawBalls(int bn) {
 
 //check floor collision
 //bn is current ball's index
+
 void checkFloor(int bn) {
 	//if ball collade with floor
 	//std::cout << ballloc[bn][2];
-	if ((ballloc[bn][1] + 5 <= 0.8) // - (-5) = +5, -5 is the floor's y
+	if ((ballloc[bn][1] + 5 <= ballr) // - (-5) = +5, -5 is the floor's y
 		&& ( -10 <= ballloc[bn][0]) &&( ballloc[bn][0] <= 10)  //check if the ball will locate on floor
 		&& (-20 <= ballloc[bn][2]) && (ballloc[bn][2] <= -10)) {
 		ballv[bn][1] = ballv[bn][1] * -0.9 ; //energy loss coused by collision 
 		std::cout << ballloc[bn][0];
 		//onfloor = true;
+	}
+
+}
+
+//chcek boll collision
+void checkball(int bn) {
+	//use current x/y minus other x/y, if the absolute value is less than radius, then collision detected
+	for (int i = 0; i < ballnum; i++) {
+		if (i != bn) {
+			//check distance
+			if (sqrtf((ballloc[i][0] - ballloc[bn][0]) * (ballloc[i][0] - ballloc[bn][0])
+				+ (ballloc[i][1] - ballloc[bn][1]) * (ballloc[i][1] - ballloc[bn][1])
+				+ (ballloc[i][2] - ballloc[bn][2]) * (ballloc[i][2] - ballloc[bn][2])) < 2 * ballr) {
+				//use elastic collision to calculate velocity of two balls
+				//velocity on x
+				ballv[i][0] = ((ballm[i] - ballm[bn]) * ballv[i][0] + 2 * ballm[bn] * ballv[bn][0]) / (ballm[i] + ballm[bn]);
+				ballv[bn][0] = ((ballm[bn] - ballm[i]) * ballv[bn][0] + 2 * ballm[i] * ballv[i][0]) / (ballm[i] + ballm[bn]);
+
+				//velocity on y
+				ballv[i][1] = ((ballm[i] - ballm[bn]) * ballv[i][1] + 2 * ballm[bn] * ballv[bn][1]) / (ballm[i] + ballm[bn]);
+				ballv[bn][1] = ((ballm[bn] - ballm[i]) * ballv[bn][1] + 2 * ballm[i] * ballv[i][1]) / (ballm[i] + ballm[bn]);
+
+				// velocity on z
+				ballv[i][2] = ((ballm[i] - ballm[bn]) * ballv[i][2] + 2 * ballm[bn] * ballv[bn][2]) / (ballm[i] + ballm[bn]);
+				ballv[bn][2] = ((ballm[bn] - ballm[i]) * ballv[bn][2] + 2 * ballm[i] * ballv[i][2]) / (ballm[i] + ballm[bn]);
+
+				//change force after collision
+				float tempx = ballf[i][0];
+				ballf[i][0] += ballf[bn][0];
+				ballf[bn][0] += ballf[i][0];
+				
+				float tempy = ballf[i][1];
+				ballf[i][1] += ballf[bn][1];
+				ballf[bn][1] += ballf[i][1];
+				
+				float tempz = ballf[i][2];
+				ballf[i][2] += ballf[bn][2];
+				ballf[bn][2] += ballf[i][2];
+				
+				
+			}
+		}
 	}
 
 }
